@@ -1,0 +1,147 @@
+{% extends 'telegram_payments/base.html' %}
+
+
+{% block title %}Managing the bot{% endblock %}
+
+
+{% block content %}
+
+  <div class="ui container ">
+
+    <h1>
+      Managing the bot
+      <form id="delete_bot_form" action="{% url 'dtbp_delete' %}" method="post" style="float:right">
+        {% csrf_token %}
+        <button class="negative ui button tiny">Delete the bot</button>
+      </form>
+    </h1>
+
+    <div class="ui top attached tabular menu">
+      <a href="{% url 'dtbp_settings' %}" class="active item">Settings</a>
+      <a href="#" class="item">...</a>
+    </div>
+    <div class="ui bottom attached active tab segment">
+
+      <form action="{% url 'dtbp_settings' %}" novalidate method="post" class="ui form">
+
+          {% csrf_token %}
+
+          <table class="ui celled table">
+            <tbody>
+
+              <tr>
+                <td><b>Bot username</b></td>
+                <td>{{ bot_username }}</td>
+              </tr>
+
+              <tr>
+                <td><b>Bot token</b></td>
+                <td>{{ bot_token }}</td>
+              </tr>
+
+              <tr>
+                <td><b>Payments provider token</b></td>
+                <td>{{ provider_token }}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <b>WebhookUrl</b>
+                  <button class="ui button mini"
+                          id="testing_webhook"
+                          type="button"
+                          data-url="{{ webhook_url }}">Test</button>
+                </td>
+                <td>{{ webhook_url }}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <b>Need name</b>
+                  <p>{{ form.need_name.help_text }}</p>
+                </td>
+                <td>{{ form.need_name }}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <b>Need phone number</b>
+                  <p>{{ form.need_phone_number.help_text }}</p>
+                </td>
+                <td>{{ form.need_phone_number }}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <b>Need email</b>
+                  <p>{{ form.need_email.help_text }}</p>
+                </td>
+                <td>{{ form.need_email }}</td>
+              </tr>
+
+              <tr>
+                <td>
+                  <b>Need shipping address</b>
+                  <p>{{ form.need_shipping_address.help_text }}</p>
+                </td>
+                <td>{{ form.need_shipping_address }}</td>
+              </tr>
+
+              <tr>
+                <td><b>On/Off</b></td>
+                <td>
+                  {{ form.onoff }}
+                  <div id="message-wrapper" class="field" style="{% if is_the_bot_on %}display: none{% endif %}">
+                    <label>Message if payments bot is disabled.</label>
+                    {{ form.message_if_bot_is_disabled }}
+                  </div>
+                </td>
+              </tr>
+
+{#              <tr>#}
+{#                <td><b>On/Off</b></td>#}
+{#                <td>#}
+{##}
+  {#                <form action="{% url 'dtbp_onoff' %}" method="post">#}
+  {##}
+  {#                  {% csrf_token %}#}
+  {##}
+  {#                  <div class="ui form">#}
+  {##}
+  {#                    <div class="ui toggle checkbox">#}
+  {#                      <input type="hidden" name="turn_on" value="{{ is_the_bot_on|yesno:"yes,no" }}">#}
+  {#                      <input type="checkbox" name="public" {% if is_the_bot_on %}checked{% endif %}>#}
+  {#                    </div>#}
+  {##}
+  {#                    <div id="message-wrapper" class="field" style="{% if is_the_bot_on %}display: none{% endif %}">#}
+  {#                      <label>Message if payments bot is disabled.</label>#}
+  {#                      <textarea name="message_if_bot_is_disabled" rows="2">{{ message_if_bot_is_disabled }}</textarea>#}
+  {#                    </div>#}
+  {##}
+  {#                    <button class="positive ui button tiny">Save</button>#}
+  {##}
+  {#                  </div>#}
+  {##}
+  {#                </form>#}
+{##}
+{#                </td>#}
+{#              </tr>#}
+
+            </tbody>
+          </table>
+
+        <button class="positive ui button small">Save</button>
+
+        </form>
+
+    </div>
+
+    <a class="ui label" href="https://github.com/bodpad/django-telegram-payment" target="_blank">
+      <i class="github icon"></i>Django telegram bot payments (dtbp) GitHub
+    </a>
+
+    <br><br>
+
+  </div>
+
+{% endblock %}

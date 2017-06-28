@@ -1,0 +1,70 @@
+{% extends 'telegram_payments/base.html' %}
+
+{% block content %}
+
+  <form action="{% url 'dtbp_create' %}" class="ui container form" style="margin-top: 20px" method="post" novalidate>
+
+    {% csrf_token %}
+
+    <h1>Installing</h1>
+
+    <div class="ui segment">
+      <h3>Step #1</h3>
+      <p>
+        Create a new bot by instruction
+        <a target="_blank"
+           class="ui label"
+           href="https://core.telegram.org/bots#creating-a-new-bot">https://core.telegram.org/bots</a>
+        and insert the received <b>token</b> in the field below.
+      </p>
+      <div class="field">
+        <label>{{ form.bot_token.label }}</label>
+        {{ form.bot_token }}
+      </div>
+    </div>
+
+    <div class="ui segment">
+      <h3>Step #2</h3>
+      <p>
+        Get payments provider token by instruction
+        <a target="_blank"
+           class="ui label"
+           href="https://core.telegram.org/bots/payments#introducing-payments">https://core.telegram.org/bots/payments</a>
+        and insert the received <b>token</b> in the field below.
+      </p>
+      <div class="field">
+        <label>{{ form.payments_provider_token.label }}</label>
+        {{ form.payments_provider_token }}
+      </div>
+    </div>
+
+    <div class="ui segment">
+      <h3>Step #3</h3>
+      <pre>
+        <code class="bash">
+          def telecho(request, order_id):
+            try:
+                order = Order.objects.get(id=order_id)
+            except:
+                return None
+            else:
+                return {
+                    'description': 'Ураа2!!!',
+                    'prices': [
+                        {'label': 'Price', 'amount': 23200},
+                        {'label': 'Shipping', 'amount': 23200},
+                    ]
+                }
+        </code>
+      </pre>
+      {{ form.func }}
+    </div>
+
+    <button type="submit" class="ui button">Next</button>
+
+  </form>
+
+  <br>
+  <br>
+
+{% endblock %}

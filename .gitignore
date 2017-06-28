@@ -1,0 +1,9 @@
+/venv/
+/dist/
+/django_telegram_payment.egg-info/
+.idea/
+__pycache__/
+
+*.py[cod]
+*$py.class
+.DS_Store

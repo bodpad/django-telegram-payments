@@ -1,0 +1,19 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'telegram_payments/semantic-ui/dist/semantic.min.css' %}">
+</head>
+<body>
+
+  {% block content %}{% endblock %}
+
+  <script src="{% static 'telegram_payments/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'telegram_payments/semantic-ui/dist/semantic.min.js' %}"></script>
+  <script src="{% static 'telegram_payments/global.js' %}"></script>
+
+</body>
+</html>
