@@ -31,17 +31,17 @@
 
               <tr>
                 <td><b>Bot username</b></td>
-                <td>{{ bot_username }}</td>
+                <td>{{ bot.username }}</td>
               </tr>
 
               <tr>
                 <td><b>Bot token</b></td>
-                <td>{{ bot_token }}</td>
+                <td>{{ bot.token }}</td>
               </tr>
 
               <tr>
                 <td><b>Payments provider token</b></td>
-                <td>{{ provider_token }}</td>
+                <td>{{ bot.pp_token }}</td>
               </tr>
 
               <tr>
@@ -50,9 +50,9 @@
                   <button class="ui button mini"
                           id="testing_webhook"
                           type="button"
-                          data-url="{{ webhook_url }}">Test</button>
+                          data-url="{{ bot.webhook_url }}">Test</button>
                 </td>
-                <td>{{ webhook_url }}</td>
+                <td>{{ bot.webhook_url }}</td>
               </tr>
 
               <tr>
@@ -91,41 +91,12 @@
                 <td><b>On/Off</b></td>
                 <td>
                   {{ form.onoff }}
-                  <div id="message-wrapper" class="field" style="{% if is_the_bot_on %}display: none{% endif %}">
+                  <div id="message-wrapper" class="field" style="{% if bot.is_on %}display: none{% endif %}">
                     <label>Message if payments bot is disabled.</label>
                     {{ form.message_if_bot_is_disabled }}
                   </div>
                 </td>
               </tr>
-
-{#              <tr>#}
-{#                <td><b>On/Off</b></td>#}
-{#                <td>#}
-{##}
-  {#                <form action="{% url 'dtbp_onoff' %}" method="post">#}
-  {##}
-  {#                  {% csrf_token %}#}
-  {##}
-  {#                  <div class="ui form">#}
-  {##}
-  {#                    <div class="ui toggle checkbox">#}
-  {#                      <input type="hidden" name="turn_on" value="{{ is_the_bot_on|yesno:"yes,no" }}">#}
-  {#                      <input type="checkbox" name="public" {% if is_the_bot_on %}checked{% endif %}>#}
-  {#                    </div>#}
-  {##}
-  {#                    <div id="message-wrapper" class="field" style="{% if is_the_bot_on %}display: none{% endif %}">#}
-  {#                      <label>Message if payments bot is disabled.</label>#}
-  {#                      <textarea name="message_if_bot_is_disabled" rows="2">{{ message_if_bot_is_disabled }}</textarea>#}
-  {#                    </div>#}
-  {##}
-  {#                    <button class="positive ui button tiny">Save</button>#}
-  {##}
-  {#                  </div>#}
-  {##}
-  {#                </form>#}
-{##}
-{#                </td>#}
-{#              </tr>#}
 
             </tbody>
           </table>

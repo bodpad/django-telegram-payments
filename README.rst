@@ -1,5 +1,5 @@
 =====
-Django Telegram Bot Payments (DTBP)
+Django Telegram Bot Payments (DTBP) =>In developing<=
 =====
 
 It's easy way to set up a bot telegram and connect to the Django project for receiving payments.
@@ -8,7 +8,7 @@ It's easy way to set up a bot telegram and connect to the Django project for rec
 Quick start
 -----------
 
-1. pip install django-telegram-payments
+1. pip install git+https://github.com/bodpad/django-telegram-payments.git
 
 1. Add "telegram_payments" to your INSTALLED_APPS setting like this::
 
@@ -27,5 +27,5 @@ Quick start
 
 5. ...
 
-# bot436968383:AAHwxt5sI3imiY4l5oHIaUJceqCY80eFnAw
-# 284685063:TEST:MjJmYWFkNmViZjhm
+
+Supported languages: En, Ru

@@ -4,6 +4,7 @@ import shelve
 import requests
 import importlib
 from django.conf import settings
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 
 API_URL = 'https://api.telegram.org/bot{0}/{1}'
@@ -31,11 +32,14 @@ def create_bot(bot_token, payments_provider_token, webhook_url, function):
         db['need_email'] = False
         db['functneed_shipping_addression'] = False
         db['onoff'] = False
+        db['webhook_url'] = webhook_url
         db.close()
 
 
 class TelegramBotPayments:
-
+    """
+    Class for work on the bot
+    """
     def __init__(self, chat_id=None):
         if not chat_id is None:
             self.chat_id = chat_id
@@ -49,29 +53,26 @@ class TelegramBotPayments:
         with shelve.open(DB_FILEPATH) as db:
             return db.get('onoff')
 
-    def turn_on(self):
+    @property
+    def webhook_url(self):
         with shelve.open(DB_FILEPATH) as db:
-            db['onoff'] = True
-            db.close()
-
-    def turn_off(self):
-        with shelve.open(DB_FILEPATH) as db:
-            db['onoff'] = False
-            db.close()
+            return db.get('webhook_url')
 
     def clear(self):
         with shelve.open(DB_FILEPATH) as db:
             db.clear()
             db.close()
 
-    def set_message_if_bot_is_disabled(self, message):
+    @property
+    def message_if_disabled(self):
+        with shelve.open(DB_FILEPATH) as db:
+            return db.get('message_if_bot_is_disabled')
+
+    @message_if_disabled.setter
+    def message_if_disabled(self, message):
         with shelve.open(DB_FILEPATH) as db:
             db['message_if_bot_is_disabled'] = message
             db.close()
-
-    def get_message_if_bot_is_disabled(self):
-        with shelve.open(DB_FILEPATH) as db:
-            return db.get('message_if_bot_is_disabled')
 
     def send_invoice(self, order_id: int, description: str, prices: list):
         db = shelve.open(DB_FILEPATH)
@@ -95,7 +96,7 @@ class TelegramBotPayments:
         url = API_URL.format(self.token, 'sendInvoice')
         request = requests.post(url, data=data)
         #print(r.request.body)
-        #print(r.text)
+        print(request.text)
 
     def send_message(self, text:str):
         url = API_URL.format(self.token, 'sendMessage')
@@ -108,16 +109,6 @@ class TelegramBotPayments:
 
         if request.status_code:
             print(request.text)
-
-
-    # def get_cc(self):
-    #     try:
-    #         from django.conf import settings
-    #         cc = settings.LANGUAGE_CODE.split('-')[1].lower()
-    #     except:
-    #         cc = 'en'
-    #     else:
-    #         return cc
 
     def get_func(self):
         try:

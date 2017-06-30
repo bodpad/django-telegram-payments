@@ -15,59 +15,44 @@ from .bot import TelegramBotPayments, create_bot, DB_FILEPATH
 @require_http_methods(["GET"])
 def main(request):
     bot = TelegramBotPayments()
-    if bot.token is None:
-        return redirect('dtbp_create')
-    else:
-        return redirect('dtbp_settings')
+    return redirect('dtbp_create') if bot.token is None else redirect('dtbp_settings')
 
 
 @user_passes_test(lambda u: u.is_superuser)
 def settings(request):
+    """
+    Bot settings view
+    """
     bot = TelegramBotPayments()
 
     if bot.token is None:
         return redirect('dtbp_create')
 
     if request.method == 'GET':
-        initial = {}
+        initial = dict()
 
-        with shelve.open(DB_FILEPATH) as db:
-            initial.update({'onoff': db.get('onoff')})
-            initial.update({'need_name':  db.get('need_name')})
-            initial.update({'need_phone_number': db.get('need_phone_number')})
-            initial.update({'need_email': db.get('need_email')})
-            initial.update({'need_shipping_address': db.get('need_shipping_address')})
-            initial.update({'message_if_bot_is_disabled': db.get('message_if_bot_is_disabled')})
-            db.close()
-
-        form = BotSettingsForm(initial=initial)
+        db = shelve.open(DB_FILEPATH)
+        initial.update({'onoff': db.get('onoff')})
+        initial.update({'need_name':  db.get('need_name')})
+        initial.update({'need_phone_number': db.get('need_phone_number')})
+        initial.update({'need_email': db.get('need_email')})
+        initial.update({'need_shipping_address': db.get('need_shipping_address')})
+        initial.update({'message_if_bot_is_disabled': db.get('message_if_bot_is_disabled')})
+        db.close()
 
         context = {
-            'form': form,
-            'bot_token': bot.token,
-            'provider_token': bot.pp_token,
-            'bot_username': bot.username,
-            'is_the_bot_on': bot.is_on(),
-            'message_if_bot_is_disabled': bot.get_message_if_bot_is_disabled(),
-            'webhook_url': request.build_absolute_uri(reverse('dtbp_webhook', args=[bot.token]))
+            'form': BotSettingsForm(initial=initial),
+            'bot': bot,
         }
+
         return render(request, 'telegram_payments/main.html', context)
     else:
         form = BotSettingsForm(request.POST)
 
-        context = {
-            'form': form,
-            'bot_token': bot.token,
-            'provider_token': bot.pp_token,
-            'bot_username': bot.username,
-            'is_the_bot_on': bot.is_on(),
-            'message_if_bot_is_disabled': bot.get_message_if_bot_is_disabled(),
-            'webhook_url': request.build_absolute_uri(reverse('dtbp_webhook', args=[bot.token]))
-        }
-
         if not form.is_valid():
-            return render(request, 'telegram_payments/main.html', context)
+            return render(request, 'telegram_payments/main.html', {'form': form, 'bot': bot})
 
+        # Updating bot settings
         with shelve.open(DB_FILEPATH) as db:
             db['onoff']                      = form.cleaned_data['onoff']
             db['need_name']                  = form.cleaned_data['need_name']
@@ -90,23 +75,36 @@ def create(request):
         return render(request, 'telegram_payments/create.html', {'form': form})
     else:
         form = BotCreatingForm(request.POST)
+
         if not form.is_valid():
+            # If the form is not valid, display errors.
             return render(request, 'telegram_payments/create.html', {'form': form})
 
-        bot_token = form.cleaned_data['bot_token']
-        payments_provider_token= form.cleaned_data['payments_provider_token']
+        # Bot token
+        # https://core.telegram.org/bots/api#authorizing-your-bot
+        token = form.cleaned_data['bot_token']
+
+        # Payments provider token
+        # https://core.telegram.org/bots/payments#getting-a-token
+        provider_token= form.cleaned_data['payments_provider_token']
+
+        # Custom function for obtaining order data.
         function = form.cleaned_data['func']
 
-        webhook_url = reverse('dtbp_webhook', args=[bot_token])
-        webhook_url = request.build_absolute_uri(webhook_url)
+        # Url for receive incoming updates via an outgoing webhook.
+        # https://core.telegram.org/bots/api#setwebhook
+        webhook = reverse('dtbp_webhook', args=[token])
+        webhook = request.build_absolute_uri(webhook)
 
-        create_bot(bot_token, payments_provider_token, webhook_url, function)
+        # Creating a bot
+        create_bot(token, provider_token, webhook, function)
+
         return redirect('dtbp_settings')
 
 
 @csrf_exempt
 def webhook(request, bot_token):
-    #request_body = json.loads(request.body)
+    # request_body = json.loads(request.body)
     request_body = '{"update_id":263998294,\n"message":{"message_id":160,"from":{"id":63308080,"first_name":"Kalamart","username":"kalamartru","language_code":"ru-RU"},"chat":{"id":63308080,"first_name":"Kalamart","username":"kalamartru","type":"private"},"date":1498458475, "text":"/pay 35"}}'
     request_body = json.loads(request_body)
 
@@ -114,18 +112,20 @@ def webhook(request, bot_token):
 
     message = request_body['message']
 
+    # Unique chat identifier between user and bot.
     chat_id = message['chat']['id']
 
     bot = TelegramBotPayments(chat_id)
 
-    # Запрос не от телеграм
+    # Request comes not from Telegram
     if bot.token != bot_token:
         return HttpResponse()
 
     if not bot.is_on():
-        bot.send_message(bot.get_message_if_bot_is_disabled())
+        bot.send_message(bot.message_if_disabled)
         return HttpResponse()
 
+    # The message that the user sent to the bot
     text = message.get('text')
 
     # text is None, если боту отправили не текстовове сообщение (sticker, video, location e.t.c.)
@@ -170,20 +170,4 @@ def delete(request):
     """
     bot = TelegramBotPayments()
     bot.clear()
-    return redirect('dtbp_settings')
-
-
-@user_passes_test(lambda u: u.is_superuser)
-@require_http_methods(["POST"])
-def on_off(request):
-    bot = TelegramBotPayments()
-    
-    if request.POST['turn_on'] == 'yes':
-        bot.turn_on()
-    else:
-        bot.turn_off()
-        message_if_bot_is_disabled = request.POST['message_if_bot_is_disabled']
-        if bot.get_message_if_bot_is_disabled() != message_if_bot_is_disabled:
-            bot.set_message_if_bot_is_disabled(message_if_bot_is_disabled)
-        
     return redirect('dtbp_settings')
